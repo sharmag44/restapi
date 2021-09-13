@@ -1,3 +1,4 @@
+require.config("dotenv");
 const express = require('express');
 const mongoose = require("mongoose");
 const bcrypt = require('bcrypt');
@@ -22,7 +23,7 @@ next();
 }
 
 const userSchema = new mongooseSchema({
-    email :{
+    role :{
         type:String,
         enum :['user','admin'],
         default:"user"
@@ -40,14 +41,27 @@ const productSchema = new mongooseSchema({
     }
 });
 const Product = mongoose.model("Product",productSchema);
-app.get("/",(req,res) => {
-    res.send("Hello")
-})
 
-app.post("/welcome",auth,(req,res)
-=>{
-    res.status(200).send("welcome")
-})
+
+app.post("/welcome",auth,isAdminstrator,(req,res) =>{
+    res.status(200).send("welcome🖐")
+});
+
+//post a products
+app.post("/product",(req,res)=>{
+    const stuff =  new Product({
+        item:req.body.item,
+        rate:req.body.rate
+    })
+    stuff.save((err) =>{
+        if (!err){
+            res.status(200).send("item inserted successfully")
+        }
+        else{
+            res.status(404).send(err);
+        }
+    })
+});
 app.listen(port,()=>{
     console.log(`Server is running at port ${port}`);
 })
